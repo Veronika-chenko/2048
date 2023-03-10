@@ -13,7 +13,6 @@ body {
 }
 
 #game-board {
-    /* переменные для повторяющихся значений */
     --cell-size: 20vmin;
     --cell-gap: 2vmin;
 

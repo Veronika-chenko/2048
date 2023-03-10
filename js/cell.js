@@ -33,7 +33,7 @@ export class Cell {
         return !!this.linkedTileForMerge;
     }
 
-    canAccept(newTile) { // retur ntrue/false
+    canAccept(newTile) { // return true/false
         return this.isEmpty() || (!this.hasTileForMerge() && this.linkedTile.value === newTile.value)
     }
 

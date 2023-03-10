@@ -8,7 +8,6 @@ export class Grid {
         this.cells = [];
         for (let i = 0; i < CELLS_COUNT; i += 1) {
             this.cells.push(
-                //новая ячейка - экземпляр класса Cell 
                 new Cell(gridElement, i % GRID_SIZE, Math.floor(i / GRID_SIZE))
             )
         }

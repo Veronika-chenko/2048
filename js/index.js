@@ -14,7 +14,6 @@ function setupInputOnce() {
 }
 
 async function handleInput(e) {
-    // console.log("key", e.key);
     switch (e.key) {
         case "ArrowUp":
             if (!canMoveUp()) {
@@ -53,15 +52,15 @@ async function handleInput(e) {
     const newTile = new Tile(gameBoard);
     grid.getRandomEmptyCell().linkTile(newTile);
 
-    if (!canMoveUp() && !canMoveDown() && !canMoveLeft() && canMoveRight()) {
+    if (!canMoveUp() && !canMoveDown() && !canMoveLeft() && !canMoveRight()) {
         await newTile.waitForAnimationEnd();
-        alert("Try again!");
+        alert("Game over! Try again");
         return;
     }
 
     setupInputOnce()
 }
-// async/await 
+// async/await for a smooth transition
 async function moveUp() {
     await slideTiles(grid.cellsGroupedByColumn);
 }
@@ -111,9 +110,9 @@ function slideTilesInGroup(group, promises) {
         promises.push(cellWithTile.linkedTile.waitForTransitionEnd())
 
         if (targetCell.isEmpty()) {
-            targetCell.linkTile(cellWithTile.linkedTile); // привязать к пустой 
+            targetCell.linkTile(cellWithTile.linkedTile); // to link a tile to an empty cell
         } else {
-            targetCell.linkTileForMerge(cellWithTile.linkedTile)
+            targetCell.linkTileForMerge(cellWithTile.linkedTile);
         }
 
         cellWithTile.unlinkTile();
