@@ -13,20 +13,36 @@ function setupInputOnce() {
     window.addEventListener("keydown", handleInput, { once: true });
 }
 
-function handleInput(e) {
+async function handleInput(e) {
     // console.log("key", e.key);
     switch (e.key) {
         case "ArrowUp":
-            moveUp();
+            if (!canMoveUp()) {
+                setupInputOnce();
+                return;
+            }
+            await moveUp();
             break;
         case "ArrowDown":
-            moveDown();
+            if (!canMoveDown()) {
+                setupInputOnce();
+                return;
+            }
+            await moveDown();
             break;
         case "ArrowLeft":
-            moveLeft();
+            if (!canMoveLeft()) {
+                setupInputOnce();
+                return;
+            }
+            await moveLeft();
             break;
         case "ArrowRight":
-            moveRight();
+            if (!canMoveRight()) {
+                setupInputOnce();
+                return;
+            }
+            await moveRight();
             break;
     
         default:
@@ -34,35 +50,47 @@ function handleInput(e) {
             return;
     }
 
+    const newTile = new Tile(gameBoard);
+    grid.getRandomEmptyCell().linkTile(newTile);
+
+    if (!canMoveUp() && !canMoveDown() && !canMoveLeft() && canMoveRight()) {
+        await newTile.waitForAnimationEnd();
+        alert("Try again!");
+        return;
+    }
+
     setupInputOnce()
 }
-
-function moveUp() {
-    slideTiles(grid.cellsGroupedByColumn);
+// async/await 
+async function moveUp() {
+    await slideTiles(grid.cellsGroupedByColumn);
 }
 
-function moveDown() {
-    slideTiles(grid.cellGroupedByReversedColumn)
+async function moveDown() {
+    await slideTiles(grid.cellGroupedByReversedColumn)
 }
 
-function moveLeft() {
-    slideTiles(grid.cellGroupedByRow);
+async function moveLeft() {
+    await slideTiles(grid.cellGroupedByRow);
 }
 
-function moveRight() {
-    slideTiles(grid.cellGroupedByReversedRow);
+async function moveRight() {
+    await slideTiles(grid.cellGroupedByReversedRow);
 }
 
-function slideTiles(groupedCells) {
+async function slideTiles(groupedCells) {
     // console.log('groupedCells: ', groupedCells)
-    groupedCells.forEach(group => slideTilesInGroup(group))
+    const promises = [];
+    groupedCells.forEach(group => slideTilesInGroup(group, promises))
+
+    await Promise.all(promises);
 
     grid.cells.forEach(cell => {
         cell.hasTileForMerge() && cell.mergeTiles();
     })
 }
 
-function slideTilesInGroup(group) {
+function slideTilesInGroup(group, promises) {
     for (let i = 1; i < group.length; i += 1) {
         if (group[i].isEmpty()) {
             continue;
@@ -80,6 +108,8 @@ function slideTilesInGroup(group) {
             continue;
         }
 
+        promises.push(cellWithTile.linkedTile.waitForTransitionEnd())
+
         if (targetCell.isEmpty()) {
             targetCell.linkTile(cellWithTile.linkedTile); // привязать к пустой 
         } else {
@@ -88,4 +118,39 @@ function slideTilesInGroup(group) {
 
         cellWithTile.unlinkTile();
     }
+}
+
+function canMoveUp() {
+    return canMove(grid.cellsGroupedByColumn);
+}
+
+function canMoveDown() {
+    return canMove(grid.cellGroupedByReversedColumn);
+}
+
+function canMoveLeft() {
+    return canMove(grid.cellGroupedByRow);
+}
+
+function canMoveRight() {
+    return canMove(grid.cellGroupedByReversedRow);
+}
+
+function canMove(groupedCells) {
+    return groupedCells.some(group => canMoveInGroup(group));
+}
+
+function canMoveInGroup(group) {
+    return group.some((cell, index) => {
+        if (index === 0) {
+            return false;
+        }
+
+        if (cell.isEmpty()) {
+            return false;
+        }
+
+        const targetCell = group[index - 1];
+        return targetCell.canAccept(cell.linkedTile);
+    })
 }
