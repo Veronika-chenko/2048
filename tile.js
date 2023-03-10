@@ -22,6 +22,10 @@ export class Tile {
         this.tileElement.style.setProperty("--bg-lightness", `${bgLightness}%`)
         this.tileElement.style.setProperty("--text-lightness", `${bgLightness < 50 ? 90 : 10}%`);
     }
+
+    removeFromDOM() {
+        this.tileElement.remove();
+    }
 }
 
 // color: hsl(25, 60%, var(--text-lightness));
